@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+
+/*
+    Note: Removed Tailwind v4-specific @source directives to avoid linter warnings.
+    Configure content scanning via your Tailwind config or rely on defaults.
+*/
+
+:root {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
