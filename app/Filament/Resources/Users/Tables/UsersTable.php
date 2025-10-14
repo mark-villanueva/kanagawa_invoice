@@ -19,17 +19,31 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('氏名')
-                    ->searchable(),
+                    ->label('氏名'),
                 TextColumn::make('email')
-                    ->label('メールアドレス')
-                    ->searchable(),
+                    ->label('メールアドレス'),
                 TextColumn::make('employment_form')
                     ->label('雇用形態')
-                    ->searchable(),
+                    ->getStateUsing(function ($record) {
+                        $labels = [
+                            'corporation_employed_staff' => '法人雇用職員',
+                            'institutionally_employed_staff' => '施設雇用職員',
+                            'rehired_staff' => '再雇用職員',
+                            'part_time_staff' => 'パート職員',
+                            'others' => 'その他',
+                        ];
+                        return $labels[$record->employment_form] ?? $record->employment_form;
+                    }),
                 TextColumn::make('system_authority')
                     ->label('システム権限')
-                    ->searchable(),
+                    ->getStateUsing(function ($record) {
+                        $labels = [
+                            'administrator' => '管理者',
+                            'general_user' => '一般ユーザー',
+                            'view_only' => '閲覧のみ',
+                        ];
+                        return $labels[$record->system_authority] ?? $record->system_authority;
+                    }),
             ])
             ->filters([
                 TrashedFilter::make(),

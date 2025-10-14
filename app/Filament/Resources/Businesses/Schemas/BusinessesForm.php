@@ -25,17 +25,22 @@ class BusinessesForm
                         ->required(),
                     TextInput::make('phone')
                         ->tel()
+                        ->maxValue(11)
                         ->label('電話番号')
-                        ->required(),
-                    TextInput::make('fax')
-                        ->label('FAX番号')
                         ->required(),
                     TextInput::make('representative')
                         ->label('代表名')
                         ->required(),
-                    TextInput::make('postal_code')
-                        ->label('郵便番号')
+                    TextInput::make('fax')
+                        ->maxValue(11)
+                        ->label('FAX番号')
                         ->tel()
+                        ->maxValue(11)
+                        ->required(),
+                    TextInput::make('postal_code')
+                        ->tel()
+                        ->maxValue(11)
+                        ->label('郵便番号')
                         ->required(),
                     TextInput::make('address')
                         ->label('住所')
@@ -84,14 +89,14 @@ class BusinessesForm
                     Select::make('code_type')
                         ->label('コード種別')
                         ->options([
-                            'number_code' => '番号コード',
+                            'number_code' => '債権者コード',
                             'registration_number' => '登録番号',
                         ])
                         ->required()
                         ->reactive()
                         ->visible(fn ($get) => $get('registration_category') === 'code'),
                     TextInput::make('number_code')
-                        ->label('番号コード')
+                        ->label('債権者コード')
                         ->required()
                         ->numeric()
                         ->visible(fn ($get) => $get('registration_category') === 'code' && $get('code_type') === 'number_code'),
@@ -106,6 +111,7 @@ class BusinessesForm
                 ->columnSpanFull(),
 
                 Textarea::make('special_notes')
+                ->label('備忘記録')
                 ->columnSpanFull(),
             ]);
     }

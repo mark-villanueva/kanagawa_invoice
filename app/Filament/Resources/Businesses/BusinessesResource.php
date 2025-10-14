@@ -11,6 +11,7 @@ use App\Filament\Resources\Businesses\Schemas\BusinessesInfolist;
 use App\Filament\Resources\Businesses\Tables\BusinessesTable;
 use App\Models\Businesses;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -22,7 +23,10 @@ class BusinessesResource extends Resource
 {
     protected static ?string $model = Businesses::class;
 
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationLabel = '事業者一覧';
+    protected static string | UnitEnum | null $navigationGroup  = 'マスタ保守';
+    
     protected static ?string $modelLabel = '事業者一覧';
     protected static ?string $pluralModelLabel = '事業者一覧';
     protected static ?string $recordTitleAttribute = 'name';
@@ -31,11 +35,6 @@ class BusinessesResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return BusinessesForm::configure($schema);
-    }
-
-    public static function infolist(Schema $schema): Schema
-    {
-        return BusinessesInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -55,7 +54,6 @@ class BusinessesResource extends Resource
         return [
             'index' => ListBusinesses::route('/'),
             'create' => CreateBusinesses::route('/create'),
-            'view' => ViewBusinesses::route('/{record}'),
             'edit' => EditBusinesses::route('/{record}/edit'),
         ];
     }

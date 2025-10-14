@@ -22,12 +22,39 @@ class BusinessesTable
                     ->label('事業者コード'),
                 TextColumn::make('facility')
                     ->label('施設名'),
-                TextColumn::make('registration_category')
-                    ->label('振込先・コード'),
-                TextColumn::make('financial_institution'),
-                TextColumn::make('branch_name'),
-                TextColumn::make('number_code'),
-                TextColumn::make('registration_number'),
+                TextColumn::make('transfer_or_code')
+                    ->label('振込先・コード')
+                    ->getStateUsing(function ($record) {
+                        if ($record->registration_category === 'account_information') {
+                            $parts = array_filter([
+                                $record->financial_institution,
+                                $record->branch_name,
+                            ]);
+                            return implode(', ', $parts);
+                        }
+
+                        if ($record->registration_category === 'code') {
+                            $labels = [
+                                'number_code' => '債権者コード',
+                                'registration_number' => '登録番号',
+                            ];
+                            return $labels[$record->code_type] ?? $record->code_type;
+                        }
+
+                        return null;
+                    }),
+                TextColumn::make('regNum_or_code')
+                    ->label('')
+                    ->getStateUsing(function ($record) {
+                        if ($record->registration_category === 'code') {
+                            if ($record->code_type === 'registration_number') {
+                                return $record->registration_number;
+                            }
+                            return $record->number_code;
+                        }
+
+                        return null;
+                    }),
             ])
             ->filters([
                 TrashedFilter::make(),

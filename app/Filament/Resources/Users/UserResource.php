@@ -11,6 +11,7 @@ use App\Filament\Resources\Users\Schemas\UserInfolist;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -22,23 +23,19 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $navigationLabel = 'システム利用者一覧';
     protected static ?string $modelLabel = 'システム利用者';
     protected static ?string $pluralModelLabel = 'システム利用者';
     protected static ?string $recordTitleAttribute = 'name';
     protected static ?string $breadcrumb = 'システム利用者';
-    
+    protected static string | UnitEnum | null $navigationGroup  = 'マスタ保守'; 
 
 
     public static function form(Schema $schema): Schema
     {
         return UserForm::configure($schema);
-    }
-
-    public static function infolist(Schema $schema): Schema
-    {
-        return UserInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -58,7 +55,6 @@ class UserResource extends Resource
         return [
             'index' => ListUsers::route('/'),
             'create' => CreateUser::route('/create'),
-            'view' => ViewUser::route('/{record}'),
             'edit' => EditUser::route('/{record}/edit'),
         ];
     }

@@ -28,6 +28,7 @@ class Businesses extends Model
         'payee_name',
         'payee_name_kana',
         'registration_category',
+        'code_type',
         'number_code',
         'registration_number',
     ];

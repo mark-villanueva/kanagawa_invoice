@@ -36,14 +36,14 @@ class UserForm
                         'part_time_staff' => 'パート職員',
                         'others' => 'その他'
                     ]),
-                // Select::make('system_authority')
-                //     ->label('システム権限')
-                //     ->required()
-                //     ->options([
-                //         'administrator' => '管理者',
-                //         'general_user' => '一般ユーザー',
-                //         'view_only' => '閲覧のみ',
-                //     ]),
+                Select::make('system_authority')
+                    ->label('システム権限')
+                    ->required()
+                    ->options([
+                        'administrator' => '管理者',
+                        'general_user' => '一般ユーザー',
+                        'view_only' => '閲覧のみ',
+                    ]),
                 Textarea::make('special_notes')
                     ->label('備忘記録')
                     ->columnSpanFull(),
