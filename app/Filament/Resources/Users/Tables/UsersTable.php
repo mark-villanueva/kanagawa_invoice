@@ -24,25 +24,23 @@ class UsersTable
                     ->label('メールアドレス'),
                 TextColumn::make('employment_form')
                     ->label('雇用形態')
-                    ->getStateUsing(function ($record) {
-                        $labels = [
+                    ->formatStateUsing(function ($state) {
+                        return match ($state) {
                             'corporation_employed_staff' => '法人雇用職員',
                             'institutionally_employed_staff' => '施設雇用職員',
                             'rehired_staff' => '再雇用職員',
                             'part_time_staff' => 'パート職員',
                             'others' => 'その他',
-                        ];
-                        return $labels[$record->employment_form] ?? $record->employment_form;
+                        };
                     }),
                 TextColumn::make('system_authority')
                     ->label('システム権限')
-                    ->getStateUsing(function ($record) {
-                        $labels = [
+                    ->formatStateUsing(function ($state) {
+                        return match ($state) {
                             'administrator' => '管理者',
                             'general_user' => '一般ユーザー',
                             'view_only' => '閲覧のみ',
-                        ];
-                        return $labels[$record->system_authority] ?? $record->system_authority;
+                        };
                     }),
             ])
             ->filters([

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Jurisdictionals\Tables;
+namespace App\Filament\Resources\Hospitals\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -8,40 +8,39 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\TagsColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class JurisdictionalsTable
+class HospitalsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('jurisdictional_office_code')
-                    ->label('管轄事務所コード')
+                TextColumn::make('id')
+                    ->label('病院コード')
                     ->searchable(),
-                TextColumn::make('jurisdictional_office_name')
-                    ->label('管轄事務所')
+                TextColumn::make('hospital_name')
+                    ->label('病院名')
                     ->searchable(),
                 TextColumn::make('abbreviation')
                     ->label('略称')
                     ->searchable(),
-                TextColumn::make('prefecture_city')
-                    ->label('県市部') 
+                TextColumn::make('hospital_category')
+                    ->label('病院区分')
                     ->searchable()
-                    ->formatStateUsing(function ($state) {
-                        return match ($state) {
-                            'yokohama' => '横浜市',
-                            'kawasaki' => '川崎市',
-                            'yokosuka' => '横須賀市',
-                            'sagamihara' => '相模原市',
-                            'other' => '県市部',
-                            'none' => '県外',
-                        };
-                    })
-                    ->label('県市部'),
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'general_hospital' => '総合病院',
+                        'clinic' => '診療所',
+                        'rehabilitation_hospital' => 'リハビリテーション病院',
+                        'specialist_hospital' => '専門病院',
+                    }),
+                TagsColumn::make('supporting_medical_departments')
+                    ->label('対応診療科目')
+                    ->separator(',')
+                    ->searchable(),
             ])
             ->filters([
                 TrashedFilter::make(),
