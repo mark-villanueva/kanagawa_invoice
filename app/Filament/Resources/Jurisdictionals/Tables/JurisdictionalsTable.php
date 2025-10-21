@@ -40,8 +40,7 @@ class JurisdictionalsTable
                             'other' => '県市部',
                             'none' => '県外',
                         };
-                    })
-                    ->label('県市部'),
+                    }),
             ])
             ->filters([
                 TrashedFilter::make(),

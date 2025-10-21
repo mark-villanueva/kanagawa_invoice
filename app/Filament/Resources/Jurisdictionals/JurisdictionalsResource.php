@@ -29,7 +29,7 @@ class JurisdictionalsResource extends Resource
     protected static ?string $modelLabel = '管轄事務所一覧';
     protected static ?string $pluralModelLabel = '管轄事務所一覧';
     protected static ?string $recordTitleAttribute = 'name';
-    protected static ?string $breadcrumb = '管轄事務所一覧';
+    protected static ?string $breadcrumb = '管轄事務所';
     protected static string | UnitEnum | null $navigationGroup  = 'マスタ保守'; 
 
     public static function form(Schema $schema): Schema

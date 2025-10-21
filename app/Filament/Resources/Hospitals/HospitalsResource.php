@@ -29,7 +29,7 @@ class HospitalsResource extends Resource
     protected static ?string $modelLabel = '病院一覧';
     protected static ?string $pluralModelLabel = '病院一覧';
     protected static ?string $recordTitleAttribute = 'hospital_name';
-    protected static ?string $breadcrumb = '病院一覧';
+    protected static ?string $breadcrumb = '病院';
     protected static string | UnitEnum | null $navigationGroup  = 'マスタ保守'; 
 
     public static function form(Schema $schema): Schema

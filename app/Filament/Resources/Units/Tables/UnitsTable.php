@@ -30,7 +30,23 @@ class UnitsTable
                     ->formatStateUsing(fn ($state) => (new self())->formatJapaneseEraForDisplay($state)),
                 TextColumn::make('fee_name')
                     ->label('名目')
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        return match ($state) {
+                            'facility_costs' => '施設事務費', 
+                            'standard_living_costs___basic_amount' => '基準生活費ー基本額', 
+                            'standard_living_costs___winter_additional_allowance' => '基準生活費ー冬期加算', 
+                            'standard_living_costs___term_end_temporary_assistance' => '基準生活費ー期末一時扶助', 
+                            'daily_necessities_costs___daily_necessities_costs' => '日用品費ー日用品費', 
+                            'daily_necessities_costs___winter_additional_allowance' => '日用品費ー冬期加算', 
+                            'daily_necessities_costs___term_end_temporary_assistance' => '日用品費ー期末一時扶助',
+                            'day_care_costs' => '通所事業事務費',
+                            'temporary_admisison_costs' => '一時入所費',
+                            'disability_allowances_grade_1' => '障害加算金　1級',
+                            'disability_allowances_grade_2' => '障害加算金　2級',
+                            'benefit' => '給付金'
+                        };
+                    }),
                 TextColumn::make('scheduled_amount')
                     ->label('予定額')
                     ->numeric(),

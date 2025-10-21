@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Units\Schemas;
 
+use App\Models\Hospitals;
+use App\Models\Jurisdictionals;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TagsInput;
@@ -18,7 +20,7 @@ class UnitsForm
             ->components([
                 Section::make('単価登録')
                     ->schema([
-                        Grid::make(8)
+                        Grid::make(5)
                             ->schema([
                                 DatePicker::make('start_date')
                                     ->label('開始日')
@@ -57,21 +59,64 @@ class UnitsForm
                                 TextInput::make('scheduled_amount')
                                     ->label('予定額')
                                     ->numeric()
-                                    ->required(),
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function (callable $get, callable $set) {
+                                        $scheduledAmount = (float) $get('scheduled_amount') ?? 0;
+                                        $actualAmount = (float) $get('actual_amount') ?? 0;
+                                        $difference = $actualAmount - $scheduledAmount;
+                                        $set('difference', $difference);
+                                    }),
                                 
                                 TextInput::make('actual_amount')
                                     ->label('実績額')
-                                    ->numeric(),
-                                
-                                TextInput::make('welfare_hospital_id')
+                                    ->numeric()
+                                    ->live()
+                                    ->afterStateUpdated(function (callable $get, callable $set) {
+                                        $scheduledAmount = (float) $get('scheduled_amount') ?? 0;
+                                        $actualAmount = (float) $get('actual_amount') ?? 0;
+                                        $difference = $actualAmount - $scheduledAmount;
+                                        $set('difference', $difference);
+                                    }),
+
+                                Select::make('welfare_hospital')
+                                    ->label('対象福祉')
+                                    ->options([
+                                        '2' => '管轄事務所一覧', 
+                                        '3' => '病院一覧', 
+                                    ])
+                                    ->dehydrated(fn ($state) => filled($state))
+                                    ->live()
+                                    ->afterStateUpdated(function (callable $set) {
+                                        $set('welfare_hospital_id', []);
+                                    }),
+
+                                Select::make('welfare_hospital_id')
                                     ->label('対象福祉・病院')
-                                    ->required(),
+                                    ->required(fn (callable $get) => filled($get('welfare_hospital')))
+                                    ->searchable()
+                                    ->hidden(fn (callable $get) => !$get('welfare_hospital'))
+                                    ->options(function (callable $get) {
+                                        $welfareHospital = $get('welfare_hospital');
+                                        
+                                        if ($welfareHospital === '2') {
+                                            // 管轄事務所一覧 - show jurisdictional office names
+                                            return Jurisdictionals::query()->pluck('jurisdictional_office_name', 'jurisdictional_office_name');
+                                        } elseif ($welfareHospital === '3') {
+                                            // 病院一覧 - show hospital names
+                                            return Hospitals::query()->pluck('hospital_name', 'hospital_name');
+                                        }
+                                        
+                                        return [];
+                                    })
+                                    ->preload()
+                                    ->multiple(),
                                 
                                 TextInput::make('difference')
                                     ->label('差分')
                                     ->numeric()
                                     ->default(0)
-                                    ->disabled(),
+                                    ->readOnly(),
                                 
                                 Select::make('billing_status')
                                     ->label('処理ステータス')

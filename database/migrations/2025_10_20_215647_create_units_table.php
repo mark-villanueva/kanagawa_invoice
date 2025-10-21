@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('fee_name')->nullable()->comment('名目');
             $table->unsignedBigInteger('scheduled_amount')->nullable()->comment('予定額');
             $table->unsignedBigInteger('actual_amount')->nullable()->comment('実績額');
-            $table->tinyInteger('welfare_hospital')->default(1)->comment("対象福祉・病院");
+            $table->tinyInteger('welfare_hospital')->nullable()->comment("対象福祉・病院");
             $table->json('welfare_hospital_id')->nullable()->comment('対象福祉・病院ID');
             $table->BigInteger('difference')->nullable()->comment('差額');
             $table->string('billing_status', 255)->nullable()->comment('請求ステータス');

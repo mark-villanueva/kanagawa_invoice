@@ -30,7 +30,7 @@ class BusinessesResource extends Resource
     protected static ?string $modelLabel = '事業者一覧';
     protected static ?string $pluralModelLabel = '事業者一覧';
     protected static ?string $recordTitleAttribute = 'name';
-    protected static ?string $breadcrumb = '事業者一覧';
+    protected static ?string $breadcrumb = '事業者';
 
     public static function form(Schema $schema): Schema
     {
