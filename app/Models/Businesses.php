@@ -32,4 +32,9 @@ class Businesses extends Model
         'number_code',
         'registration_number',
     ];
+
+    public function moneyDenoms()
+    {
+        return $this->hasMany(BusinessMoneyDenom::class, 'business_id');
+    }
 }

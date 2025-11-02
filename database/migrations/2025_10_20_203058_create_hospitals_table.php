@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('fax')->nullable()->comment('FAX番号');
             $table->string('postal_code')->nullable()->comment('郵便番号');
             $table->string('address')->nullable()->comment('住所');
-            $table->unsignedBigInteger('term_end_temporary_assistance_amount')
-                ->nullable()->comment('期末一時扶助金額');
             $table->text('special_notes')->nullable()->comment('備忘記録');
             $table->string('hospital_category')->nullable()->comment('病院区分');
             $table->json('supporting_medical_departments')->nullable()->comment('対応診療科目');

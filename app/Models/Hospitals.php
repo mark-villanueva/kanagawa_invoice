@@ -24,7 +24,6 @@ class Hospitals extends Model
         'fax',
         'postal_code',
         'address',
-        'term_end_temporary_assistance',
         'special_notes',
         'hospital_category',
         'supporting_medical_departments',

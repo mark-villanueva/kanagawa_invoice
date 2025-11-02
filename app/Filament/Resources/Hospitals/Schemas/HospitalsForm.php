@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Hospitals\Schemas;
 
+use App\Models\Units;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
@@ -72,6 +73,7 @@ class HospitalsForm
                     ])
                     ->columns(2)
                     ->columnSpanFull(),
+                    
                 Section::make('期末一時扶助')
                 ->schema([
                     TextInput::make('term_end_temporary_assistance_amount')
@@ -79,7 +81,15 @@ class HospitalsForm
                         ->suffix('円')
                         ->disabled()
                         ->dehydrated(false)
-                        ->inlineLabel(),
+                        ->inlineLabel()
+                        ->afterStateHydrated(function (callable $set) {
+                            $unit = Units::where('fee_name', 'daily_necessities_costs___daily_necessities_costs')
+                                ->orderBy('created_at', 'desc')
+                                ->first();
+                            
+                            $value = $unit?->scheduled_amount ?? null;
+                            $set('term_end_temporary_assistance_amount', $value ? number_format($value) : null);
+                        }),
                     ])
                         ->columns(2)
                         ->columnSpanFull(),

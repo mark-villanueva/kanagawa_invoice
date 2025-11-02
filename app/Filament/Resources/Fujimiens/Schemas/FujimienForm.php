@@ -92,8 +92,9 @@ class FujimienForm
 
                     Select::make('jurisdictional_id')
                         ->label('管轄事務所')
-                        ->options(Jurisdictionals::all()->pluck('jurisdictional_office_name', 'id'))
-                        ->required(),
+                        ->searchable()
+                        ->preload()
+                        ->options(Jurisdictionals::all()->pluck('jurisdictional_office_name', 'id')),
                     ])
                     ->columns(2)
                     ->columnSpanFull(),

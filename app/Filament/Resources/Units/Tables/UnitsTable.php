@@ -55,7 +55,13 @@ class UnitsTable
                     ->numeric(),
                 TextColumn::make('welfare_hospital')
                     ->label('対象先')
-                    ->numeric(),
+                    ->formatStateUsing(function ($state) {
+                        return match ($state) {
+                            1 => 'ふじみ園',
+                            2 => '管轄事務所',
+                            3 => '病院一覧',
+                        };
+                    }),
                 TextColumn::make('difference')
                     ->label('差額')
                     ->numeric(),

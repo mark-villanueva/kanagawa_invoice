@@ -30,12 +30,12 @@ class JurisdictionalsForm
                         ->label('県市部 ')
                         ->required()
                         ->options([
-                            'yokohama' => '横浜市',
-                            'kawasaki' => '川崎市',
-                            'yokosuka' => '横須賀市',
-                            'sagamihara' => '相模原市',
-                            'other' => '県市部',
-                            'none' => '県外',
+                            'yokohama_city' => '横浜市',
+                            'kawasaki_city' => '川崎市',
+                            'yokosuka_city' => '横須賀市',
+                            'sagamihara_city' => '相模原市',
+                            'other_cities' => '県内市部',
+                            'outside_the_prefecture' => '県外',
                         ]),
                     TextInput::make('phone')
                         ->label('電話番号')
@@ -53,7 +53,6 @@ class JurisdictionalsForm
                     TextInput::make('fax')
                         ->label('FAX番号')
                         ->tel()
-                        ->required()
                     ])
                     ->columns(2)
                     ->columnSpanFull(),

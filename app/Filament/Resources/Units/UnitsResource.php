@@ -22,7 +22,7 @@ class UnitsResource extends Resource
     protected static ?string $model = Units::class;
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 6;
 
     protected static ?string $navigationLabel = '単価一覧';
     protected static ?string $modelLabel = '単価一覧';

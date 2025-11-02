@@ -38,97 +38,119 @@ class UnitsForm
                                     ->locale('ja')
                                     ->required(),
                                 
-                                Select::make('fee_name')
-                                    ->label('名目')
-                                    ->required()
-                                    ->options([
-                                        'facility_costs' => '施設事務費', 
-                                        'standard_living_costs___basic_amount' => '基準生活費ー基本額', 
-                                        'standard_living_costs___winter_additional_allowance' => '基準生活費ー冬期加算', 
-                                        'standard_living_costs___term_end_temporary_assistance' => '基準生活費ー期末一時扶助', 
-                                        'daily_necessities_costs___daily_necessities_costs' => '日用品費ー日用品費', 
-                                        'daily_necessities_costs___winter_additional_allowance' => '日用品費ー冬期加算', 
-                                        'daily_necessities_costs___term_end_temporary_assistance' => '日用品費ー期末一時扶助',
-                                        'day_care_costs' => '通所事業事務費',
-                                        'temporary_admisison_costs' => '一時入所費',
-                                        'disability_allowances_grade_1' => '障害加算金　1級',
-                                        'disability_allowances_grade_2' => '障害加算金　2級',
-                                        'benefit' => '給付金'
-                                    ]),
-                                
-                                TextInput::make('scheduled_amount')
-                                    ->label('予定額')
-                                    ->numeric()
-                                    ->required()
-                                    ->live()
-                                    ->afterStateUpdated(function (callable $get, callable $set) {
-                                        $scheduledAmount = (float) $get('scheduled_amount') ?? 0;
-                                        $actualAmount = (float) $get('actual_amount') ?? 0;
-                                        $difference = $actualAmount - $scheduledAmount;
-                                        $set('difference', $difference);
-                                    }),
-                                
-                                TextInput::make('actual_amount')
-                                    ->label('実績額')
-                                    ->numeric()
-                                    ->live()
-                                    ->afterStateUpdated(function (callable $get, callable $set) {
-                                        $scheduledAmount = (float) $get('scheduled_amount') ?? 0;
-                                        $actualAmount = (float) $get('actual_amount') ?? 0;
-                                        $difference = $actualAmount - $scheduledAmount;
-                                        $set('difference', $difference);
-                                    }),
-
                                 Select::make('welfare_hospital')
                                     ->label('対象福祉')
                                     ->options([
-                                        '2' => '管轄事務所一覧', 
-                                        '3' => '病院一覧', 
+                                        1 => 'ふじみ園', 
+                                        2 => '管轄事務所', 
+                                        3 => '病院一覧', 
                                     ])
                                     ->dehydrated(fn ($state) => filled($state))
                                     ->live()
                                     ->afterStateUpdated(function (callable $set) {
                                         $set('welfare_hospital_id', []);
+                                        $set('fee_name', null);
                                     }),
 
-                                Select::make('welfare_hospital_id')
-                                    ->label('対象福祉・病院')
-                                    ->required(fn (callable $get) => filled($get('welfare_hospital')))
+                                Select::make('fee_name')
+                                    ->label('名目')
                                     ->searchable()
-                                    ->hidden(fn (callable $get) => !$get('welfare_hospital'))
+                                    ->required()
                                     ->options(function (callable $get) {
                                         $welfareHospital = $get('welfare_hospital');
                                         
-                                        if ($welfareHospital === '2') {
-                                            // 管轄事務所一覧 - show jurisdictional office names
-                                            return Jurisdictionals::query()->pluck('jurisdictional_office_name', 'jurisdictional_office_name');
-                                        } elseif ($welfareHospital === '3') {
-                                            // 病院一覧 - show hospital names
-                                            return Hospitals::query()->pluck('hospital_name', 'hospital_name');
+                                        if ($welfareHospital == 1) {
+                                            // ふじみ園 - only these options
+                                            return [
+                                                'disability_allowances_grade_1' => '障害加算金　1級',
+                                                'disability_allowances_grade_2' => '障害加算金　2級',
+                                                'benefit' => '給付金'
+                                            ];
                                         }
                                         
-                                        return [];
-                                    })
-                                    ->preload()
-                                    ->multiple(),
-                                
-                                TextInput::make('difference')
-                                    ->label('差分')
-                                    ->numeric()
-                                    ->default(0)
-                                    ->readOnly(),
-                                
-                                Select::make('billing_status')
-                                    ->label('処理ステータス')
-                                    ->required()
-                                    ->options([
-                                        'unbilled' => '未請求',
-                                        'done' => '完了',
-                                    ])
-                                    ->default('unbilled')
+                                        // All other options for 管轄事務所 and 病院一覧
+                                        return [
+                                            'facility_costs' => '施設事務費', 
+                                            'standard_living_costs___basic_amount' => '基準生活費ー基本額', 
+                                            'standard_living_costs___winter_additional_allowance' => '基準生活費ー冬期加算', 
+                                            'standard_living_costs___term_end_temporary_assistance' => '基準生活費ー期末一時扶助', 
+                                            'daily_necessities_costs___daily_necessities_costs' => '日用品費ー日用品費', 
+                                            'daily_necessities_costs___winter_additional_allowance' => '日用品費ー冬期加算', 
+                                            'daily_necessities_costs___term_end_temporary_assistance' => '日用品費ー期末一時扶助',
+                                            'day_care_costs' => '通所事業事務費',
+                                            'temporary_admisison_costs' => '一時入所費',
+                                            'disability_allowances_grade_1' => '障害加算金　1級',
+                                            'disability_allowances_grade_2' => '障害加算金　2級',
+                                            'benefit' => '給付金'
+                                        ];
+                                    }),
+
+                                Grid::make(3)
+                                    ->schema([                                
+                                    TextInput::make('scheduled_amount')
+                                        ->label('予定額')
+                                        ->numeric()
+                                        ->required()
+                                        ->live()
+                                        ->afterStateUpdated(function (callable $get, callable $set) {
+                                            $scheduledAmount = (float) $get('scheduled_amount') ?? 0;
+                                            $actualAmount = (float) $get('actual_amount') ?? 0;
+                                            $difference = $actualAmount - $scheduledAmount;
+                                            $set('difference', $difference);
+                                        }),
+                                    
+                                    TextInput::make('actual_amount')
+                                        ->label('実績額')
+                                        ->numeric()
+                                        ->live()
+                                        ->afterStateUpdated(function (callable $get, callable $set) {
+                                            $scheduledAmount = (float) $get('scheduled_amount') ?? 0;
+                                            $actualAmount = (float) $get('actual_amount') ?? 0;
+                                            $difference = $actualAmount - $scheduledAmount;
+                                            $set('difference', $difference);
+                                        }),
+                                    
+                                    TextInput::make('difference')
+                                        ->label('差分')
+                                        ->numeric()
+                                        ->default(0)
+                                        ->readOnly(),
+
+                                    Select::make('billing_status')
+                                        ->label('処理ステータス')
+                                        ->required()
+                                        ->options([
+                                            'unbilled' => '未請求',
+                                            'done' => '完了',
+                                        ])
+                                        ->default('unbilled')
+                                ])
+                                    ->columns(5)
+                                    ->columnSpanFull(),
                                 ]),
+
+                            Select::make('welfare_hospital_id')
+                                ->label('対象福祉・病院')
+                                ->required(fn (callable $get) => filled($get('welfare_hospital')) && $get('welfare_hospital') != 1)
+                                ->searchable()
+                                ->hidden(fn (callable $get) => !$get('welfare_hospital') || $get('welfare_hospital') == 1)
+                                ->options(function (callable $get) {
+                                    $welfareHospital = $get('welfare_hospital');
+                                    
+                                    if ($welfareHospital == 2) {
+                                        // 管轄事務所一覧 - show jurisdictional office names
+                                        return Jurisdictionals::query()->pluck('jurisdictional_office_name', 'jurisdictional_office_name');
+                                    } elseif ($welfareHospital == 3) {
+                                        // 病院一覧 - show hospital names
+                                        return Hospitals::query()->pluck('hospital_name', 'hospital_name');
+                                    }
+                                    
+                                    return [];
+                                })
+                                ->preload()
+                                ->multiple(),
                         
-                        Grid::make(4)
+                        Grid::make(5)
                             ->schema([
                                 DatePicker::make('billing_date')
                                     ->label('請求日')
