@@ -122,8 +122,7 @@ class BusinessesForm
                             ->schema([
                                 // TextInput::make('money_denomination_name')
                                 //     ->label('金種名')
-                                //     ->required()
-                                //     ->disabled()
+                                //     ->hidden()
                                 //     ->formatStateUsing(function ($state) {
                                 //         $labels = [
                                 //             'disability_allowances_grade_1' => '障害加算金　1級',
@@ -226,7 +225,6 @@ class BusinessesForm
                                     ->dehydrated()
                                     ->default(0)
                                     ->live()
-                                    ->formatStateUsing(fn ($state) => $state ? number_format((int) $state, 0, '.', ',') : '0')
                                     ->rules([
                                         function (callable $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
