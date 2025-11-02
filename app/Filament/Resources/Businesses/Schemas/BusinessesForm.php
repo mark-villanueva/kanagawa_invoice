@@ -8,6 +8,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
@@ -120,17 +121,28 @@ class BusinessesForm
                             ->relationship()
                             ->hiddenLabel()
                             ->schema([
-                                // TextInput::make('money_denomination_name')
-                                //     ->label('金種名')
-                                //     ->hidden()
-                                //     ->formatStateUsing(function ($state) {
-                                //         $labels = [
-                                //             'disability_allowances_grade_1' => '障害加算金　1級',
-                                //             'disability_allowances_grade_2' => '障害加算金　2級',
-                                //             'benefit' => '給付金',
-                                //         ];
-                                //         return $labels[$state] ?? $state;
-                                //     }),
+                                Hidden::make('money_denomination_name')
+                                    ->afterStateHydrated(function (callable $set, $state, $record) {
+                                        // If money_denomination_name is empty, set it based on record order
+                                        if (empty($state) && $record) {
+                                            // Get the parent business record's moneyDenoms ordered by ID
+                                            $moneyDenoms = $record->business->moneyDenoms()->orderBy('id')->get();
+                                            $denominationNames = [
+                                                'disability_allowances_grade_1',
+                                                'disability_allowances_grade_2',
+                                                'benefit',
+                                            ];
+                                            
+                                            // Find this record's position
+                                            $index = $moneyDenoms->search(function ($item) use ($record) {
+                                                return $item->id === $record->id;
+                                            });
+                                            
+                                            if ($index !== false && isset($denominationNames[$index])) {
+                                                $set('money_denomination_name', $denominationNames[$index]);
+                                            }
+                                        }
+                                    }),
                                 
                                 Grid::make(3)
                                     ->schema([
