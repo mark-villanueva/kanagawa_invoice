@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
 use Illuminate\Support\HtmlString;
+use App\Models\BusinessMoneyDenom;
 
 class BusinessesForm
 {
@@ -237,6 +238,8 @@ class BusinessesForm
                                     ->dehydrated()
                                     ->default(0)
                                     ->live()
+                                    ->formatStateUsing(fn ($state) => $state ? number_format((int) $state) : '0')
+                                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(',', '', $state) : 0)
                                     ->rules([
                                         function (callable $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
@@ -248,7 +251,7 @@ class BusinessesForm
                                                         ->first();
                                                     
                                                     $scheduledAmount = $unit?->scheduled_amount ?? 0;
-                                                    $total = (int) $value;
+                                                    $total = (int) str_replace(',', '', $value);
                                                     
                                                     if ($total !== $scheduledAmount) {
                                                         $formattedScheduled = number_format($scheduledAmount);

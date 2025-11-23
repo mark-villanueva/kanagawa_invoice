@@ -7,6 +7,11 @@ use App\Models\Fujimien;
 use App\Models\Histories;
 use App\Models\Businesses;
 use App\Models\Hospitals;
+use App\Models\SelfExpenses;
+use App\Models\SelfExpensesItems;
+use App\Models\FamilyGuardians;
+use App\Models\FamilyPeriodExpenses;
+use App\Models\GuardianPeriodIncomes;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
@@ -207,13 +212,13 @@ class FujimienForm
                                         'grade_2' => '2級',
                                     ])
                                     ->required()
-                                    ->disabled(fn (callable $get) => !$get('disability_flag')),
+                                    ->hidden(fn (callable $get) => !$get('disability_flag')),
                                 TextInput::make('disability_allowances_amount')
                                     ->label('金額')
                                     ->readonly()
                                     ->suffix('円')
                                     ->default(0)
-                                    ->disabled(fn (callable $get) => !$get('disability_flag')),
+                                    ->hidden(fn (callable $get) => !$get('disability_flag')),
                             ])
                             ->columns(2)
                             ->columnSpanFull(),
@@ -250,32 +255,104 @@ class FujimienForm
                                     })
                                     ->required()
                                     ->live()
-                                    ->disabled(fn (callable $get) => !$get('disability_flag') && !$get('benefit_flag'))
+                                    ->hidden(fn (callable $get) => !$get('disability_flag') && !$get('benefit_flag'))
                                     ->afterStateUpdated(function (callable $set, $state, callable $get) {
                                         if ($get('benefit_flag')) {
                                             $set('benefit_payment_method', $state);
                                         }
                                     }),
                             ])
-                            ->columns(2)
                             ->columnSpanFull(),
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('care_worker')
                                     ->label('担当CW'),
                             ])
-                            ->columns(2)
                             ->columnSpanFull(),
                         
                     ])
                     ->columns(2)
                     ->columnSpanFull(),
+                
+                Section::make('自己負担金')
+                    ->schema([
+                        TextInput::make('type')
+                            ->hidden(),
+                        Checkbox::make('pension_flag')
+                            ->label('年金')
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, $state, callable $get) {
+                                if ($state) {
+                                    $set('type', 'pension');
+                                } else {
+                                    if (!$get('certificate_of_employment_flag')) {
+                                        $set('self_expenses_name', null);
+                                        $set('pension_number', null);
+                                        $set('payment_method', null);
+                                        $set('type', null);
+                                    } else {
+                                        $set('type', 'certificate_of_employment');
+                                    }
+                                }
+                            }),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('self_expenses_name')
+                                    ->label('名称')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('pension_flag')),
+                                TextInput::make('pension_number')
+                                    ->label('年金番号')
+                                    ->hidden(fn (callable $get) => !$get('pension_flag')),
+                                Select::make('payment_method')
+                                    ->label('支払方法')
+                                    ->options([
+                                        'cash' => '現金',
+                                        'account' => '口座',
+                                        'guardian' => '後見人',
+                                    ])
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('pension_flag')),
+                                    ]),
 
+                            Checkbox::make('certificate_of_employment_flag')
+                            ->label('就労認定')
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, $state, callable $get) {
+                                if ($state) {
+                                    $set('type', 'certificate_of_employment');
+                                } else {
+                                    if (!$get('pension_flag')) {
+                                        $set('self_expenses_name', null);
+                                        $set('pension_number', null);
+                                        $set('payment_method', null);
+                                        $set('type', null);
+                                    } else {
+                                        $set('type', 'pension');
+                                    }
+                                }
+                            }),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('self_expenses_name')
+                                    ->label('名称')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('certificate_of_employment_flag')),
+                                Select::make('payment_method')
+                                    ->label('支払方法')
+                                    ->options([
+                                        'cash' => '現金',
+                                        'account' => '口座',
+                                    ])
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('certificate_of_employment_flag')),
+                                ]),
+                    ])
+                    ->columnSpanFull(),
+                    
                 Section::make('請求・戻入情報')
                     ->schema([
-                    Grid::make(1)
-                        ->schema([
-                            Checkbox::make('payment_refund_flag')
+                        Checkbox::make('payment_refund_flag')
                                 ->label('本人')
                                 ->live()
                                 ->afterStateUpdated(function (callable $set, $state) {
@@ -283,53 +360,115 @@ class FujimienForm
                                         $set('payment_refund_method', null);
                                     }
                                 }),
-                             Select::make('payment_refund_method')
-                                 ->label('支払・戻入方法 ')
-                                 ->options([
-                                     'cash' => '現金',
-                                     'account' => '口座',
-                                 ])
-                                 ->required()
-                                 ->live()
-                                 ->disabled(fn (callable $get) => !$get('payment_refund_flag')),
-                                ]),
-                     Grid::make(2)
-                         ->schema([
-                             TextInput::make('bank_name')
-                                 ->label('銀行名')
-                                 ->required()
-                                 ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
-                             Radio::make('bank_type')
-                                 ->label('銀行種別')
-                                 ->options([
-                                     'hiratsuka_shiyo' => '平信',
-                                     'other_bank' => '他銀行',
-                                 ])
-                                 ->inline()
-                                 ->required()
-                                 ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
-                             TextInput::make('branch_name')
-                                 ->label('支店名')
-                                 ->required()
-                                 ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
-                             TextInput::make('account_type')
-                                 ->label('口座種別')
-                                 ->required()
-                                 ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
-                             TextInput::make('account_number')
-                                 ->label('口座番号')
-                                 ->required()
-                                 ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
-                             TextInput::make('account_name')
-                                 ->label('口座名義')
-                                 ->required()
-                                 ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
-                         ])
-                             ->columns(2)
-                             ->columnSpanFull(),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('payment_refund_method')
+                                    ->label('支払・戻入方法 ')
+                                    ->options([
+                                        'cash' => '現金',
+                                        'account' => '口座',
+                                    ])
+                                    ->required()
+                                    ->live()
+                                    ->hidden(fn (callable $get) => !$get('payment_refund_flag')),
+                            ])
+                            ->hidden(fn (callable $get) => !$get('payment_refund_flag')),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('bank_name')
+                                    ->label('銀行名')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
+                                Radio::make('bank_type')
+                                    ->label('銀行種別')
+                                    ->options([
+                                        'hiratsuka_shiyo' => '平信',
+                                        'other_bank' => '他銀行',
+                                    ])
+                                    ->inline()
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
+                                TextInput::make('branch_name')
+                                    ->label('支店名')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
+                                TextInput::make('account_type')
+                                    ->label('口座種別')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
+                                TextInput::make('account_number')
+                                    ->label('口座番号')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
+                                TextInput::make('account_name')
+                                    ->label('口座名義')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
+                            ])
+                            ->columnSpanFull()
+                            ->hidden(fn (callable $get) => !$get('payment_refund_flag') || $get('payment_refund_method') !== 'account'),
+
+                        TextInput::make('family_guardian_category')
+                            ->hidden(),
+                        Checkbox::make('family_flag')
+                                ->label('家族負担')
+                                ->live()
+                                ->afterStateUpdated(function (callable $set, $state, callable $get) {
+                                    if ($state) {
+                                        $set('family_guardian_category', 'family');
+                                    } else {
+                                        $set('family_guardian_category', null);
+                                    }
+                                }),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('名称')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('family_flag')),
+                                TextInput::make('phone')
+                                    ->label('電話番号')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('family_flag')),
+                                TextInput::make('relationship')
+                                    ->label('関係')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('family_flag')),
+                            ])
+                            ->hidden(fn (callable $get) => !$get('family_flag')),
+
+                        Checkbox::make('guardian_flag')
+                            ->label('後見人')
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, $state, callable $get) {
+                                if ($state) {
+                                    $set('family_guardian_category', 'guardian');
+                                } else {
+                                    $set('family_guardian_category', null);
+                                }
+                            }),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('名称')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('guardian_flag')),
+                                TextInput::make('phone')
+                                    ->label('電話番号')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('guardian_flag')),
+                                TextInput::make('relationship')
+                                    ->label('関係')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('guardian_flag')),
+                                TextInput::make('office_name')
+                                    ->label('事務所名')
+                                    ->required()
+                                    ->hidden(fn (callable $get) => !$get('guardian_flag')),
+                            ])
+                            ->hidden(fn (callable $get) => !$get('guardian_flag')),
                 ])
-                    ->columns(2)
-                    ->columnSpanFull(),
+                ->columnSpanFull(),
 
                 Textarea::make('special_notes')
                     ->label('備忘記録')
