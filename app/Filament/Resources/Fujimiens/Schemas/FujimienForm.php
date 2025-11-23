@@ -55,17 +55,37 @@ class FujimienForm
                                 ->locale('ja')
                                 ->required()
                                 ->live()
-                                ->afterStateUpdated(function (callable $set, $state) {
+                                ->afterStateUpdated(function (callable $set, $state, callable $get) {
                                     if ($state) {
-                                        $birthDate = \Carbon\Carbon::parse($state);
-                                        $age = $birthDate->age;
-                                        $set('current_age', $age);
+                                        try {
+                                            $birthDate = \Carbon\Carbon::parse($state);
+                                            $age = $birthDate->age;
+                                            $set('current_age', $age);
+                                            
+                                            // Recalculate age_from_specified_date if specified_date is already set
+                                            $specifiedDate = $get('specified_date');
+                                            if ($specifiedDate) {
+                                                try {
+                                                    $specifiedDateParsed = \Carbon\Carbon::parse($specifiedDate);
+                                                    $ageFromSpecified = (int) round($birthDate->diffInYears($specifiedDateParsed));
+                                                    $set('age_from_specified_date', $ageFromSpecified);
+                                                } catch (\Exception $e) {
+                                                    $set('age_from_specified_date', null);
+                                                }
+                                            }
+                                        } catch (\Exception $e) {
+                                            $set('current_age', null);
+                                            $set('age_from_specified_date', null);
+                                        }
+                                    } else {
+                                        $set('current_age', null);
+                                        $set('age_from_specified_date', null);
                                     }
                                 }),
                             TextInput::make('current_age')
                                 ->label('現在年齢')
                                 ->numeric()
-                                ->readonly(),
+                                ->disabled(),
                             ]),
 
                     TextInput::make('town')
@@ -82,17 +102,26 @@ class FujimienForm
                                 ->locale('ja')
                                 ->live()
                                 ->afterStateUpdated(function (callable $set, $state, callable $get) {
-                                    if ($state) {
-                                        $birthDate = \Carbon\Carbon::parse($get('date_of_birth'));
-                                        $specifiedDate = \Carbon\Carbon::parse($state);
-                                        $age = $birthDate->diffInYears($specifiedDate);
-                                        $set('age_from_specified_date', $age);
+                                    $dateOfBirth = $get('date_of_birth');
+                                    $currentAge = $get('current_age');
+                                    
+                                    if ($state && $dateOfBirth && $currentAge !== null) {
+                                        try {
+                                            $birthDate = \Carbon\Carbon::parse($dateOfBirth);
+                                            $specifiedDate = \Carbon\Carbon::parse($state);
+                                            $age = (int) round($birthDate->diffInYears($specifiedDate));
+                                            $set('age_from_specified_date', $age);
+                                        } catch (\Exception $e) {
+                                            $set('age_from_specified_date', null);
+                                        }
+                                    } else {
+                                        $set('age_from_specified_date', null);
                                     }
                                 }),
                             TextInput::make('age_from_specified_date')
                                 ->label('指定日からの年齢')
                                 ->numeric()
-                                ->readonly(),
+                                ->disabled(),
                         ]),
 
                     Select::make('jurisdictional_id')
